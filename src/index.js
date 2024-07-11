@@ -2,12 +2,21 @@ const WEBHOOK = '/endpoint';
 
 async function handleRequest(request, env) {
   const url = new URL(request.url);
-  const { BOT_TOKEN: token, WEBHOOK_SECRET: secret, ENVIRONMENT } = env;
+  const { BOT_TOKEN: token, WEBHOOK_SECRET: secret, ENVIRONMENT, USER_LIST } = env;
   const isProduction = ENVIRONMENT === 'production';
-
+  let userList = []
+  if (USER_LIST) {
+    // USER_LIST: id(string) or username(string) split by comma with optional whitespace
+    // userList: array of string
+    userList = USER_LIST.split(/,\s*/).map(item => item.trim());
+  }
+  else {
+    console.log('USER_LIST is not set')
+  }
+  
   switch (url.pathname) {
     case WEBHOOK:
-      return handleWebhook(request, secret, token);
+      return handleWebhook(request, secret, token, userList);
     case '/setWebhook':
       if (isProduction)
         return new Response('Operation not allowed in production', { status: 403 });
@@ -22,7 +31,7 @@ async function handleRequest(request, env) {
 }
 
 // https://core.telegram.org/bots/api#getting-updates
-async function handleWebhook(request, secret, token) {
+async function handleWebhook(request, secret, token, userList) {
   // https://core.telegram.org/bots/api#setwebhook
   // Set secret_tokenwith setWebhook() first, then use handleWebhook()
   if (request.headers.get('X-Telegram-Bot-Api-Secret-Token') !== secret) {
@@ -30,13 +39,22 @@ async function handleWebhook(request, secret, token) {
   }
 
   const update = await request.json();
-  await handleUpdate(update, token);
+  await handleUpdate(update, token, userList);
 
   return new Response('Ok');
 }
 
 // https://core.telegram.org/bots/api#update
-async function handleUpdate(update, token) {
+async function handleUpdate(update, token, userList) {
+
+  // userID or username in userList, or userList is empty
+  const isUserAuthorized = userList.includes(update.message.from.id.toString()) || userList.includes(update.message.from.username) || !userList.length;
+
+  if (!isUserAuthorized) {
+    console.log(`Unauthorized userid: ${update.message.from.id} , username: ${update.message.from.username}`);
+    return;
+  }
+
   if (update.message) {
     await handleMessage(update.message, token);
   }
