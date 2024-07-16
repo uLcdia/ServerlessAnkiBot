@@ -2,7 +2,7 @@ const WEBHOOK = '/endpoint';
 
 async function handleRequest(request, env) {
   const url = new URL(request.url);
-  const { BOT_TOKEN: token, WEBHOOK_SECRET: secret, ENVIRONMENT, USER_LIST } = env;
+  const { ENVIRONMENT, USER_LIST } = env;
   const isProduction = ENVIRONMENT === 'production';
   let userList = []
   if (USER_LIST) {
@@ -16,39 +16,38 @@ async function handleRequest(request, env) {
   
   switch (url.pathname) {
     case WEBHOOK:
-      return handleWebhook(request, secret, token, userList);
+      return handleWebhook(request, env);
     case '/setWebhook':
       if (isProduction)
         return new Response('Operation not allowed in production', { status: 403 });
-      return setWebhook(url, WEBHOOK, secret, token);
+      return setWebhook(url, WEBHOOK, env.WEBHOOK_SECRET, env.BOT_TOKEN);
     case '/removeWebhook':
       if (isProduction)
         return new Response('Operation not allowed in production', { status: 403 });
-      return removeWebhook(token);
+      return removeWebhook(env.BOT_TOKEN);
     default:
       return new Response('Restricted', { status: 403 });
   }
 }
 
 // https://core.telegram.org/bots/api#getting-updates
-async function handleWebhook(request, secret, token, userList) {
+async function handleWebhook(request, env) {
   // https://core.telegram.org/bots/api#setwebhook
   // Set secret_tokenwith setWebhook() first, then use handleWebhook()
-  if (request.headers.get('X-Telegram-Bot-Api-Secret-Token') !== secret) {
+  if (request.headers.get('X-Telegram-Bot-Api-Secret-Token') !== env.WEBHOOK_SECRET) {
     return new Response('Invalid secret_token', { status: 403 });
   }
 
   const update = await request.json();
-  await handleUpdate(update, token, userList);
+  await handleUpdate(update, env);
 
   return new Response('Ok');
 }
 
 // https://core.telegram.org/bots/api#update
-async function handleUpdate(update, token, userList) {
-
-  // userID or username in userList, or userList is empty
-  const isUserAuthorized = userList.includes(update.message.from.id.toString()) || userList.includes(update.message.from.username) || !userList.length;
+async function handleUpdate(update, env) {
+  // userID or username in env.USER_LIST, or env.USER_LIST is empty
+  const isUserAuthorized = env.USER_LIST.includes(update.message.from.id.toString()) || env.USER_LIST.includes(update.message.from.username) || !env.USER_LIST.length;
 
   if (!isUserAuthorized) {
     console.log(`Unauthorized userid: ${update.message.from.id} , username: ${update.message.from.username}`);
@@ -56,14 +55,14 @@ async function handleUpdate(update, token, userList) {
   }
 
   if (update.message) {
-    await handleMessage(update.message, token);
+    await handleMessage(update.message, env);
   }
 }
 
 // https://core.telegram.org/bots/api#update
 // https://core.telegram.org/bots/api#message
-async function handleMessage(message, token) {
-  await sendMessage(message.chat.id, `Echo: ${message.text}`, token);
+async function handleMessage(message, env) {
+  await sendMessage(message.chat.id, `Echo: ${message.text}`, env.BOT_TOKEN);
 }
 
 async function sendMessage(chatId, text, token) {
