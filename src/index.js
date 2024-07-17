@@ -1,4 +1,4 @@
-import { sendRequest } from "./puppeteer";
+import { sendAnki } from "./puppeteer";
 
 const WEBHOOK = '/endpoint';
 
@@ -65,7 +65,7 @@ async function handleUpdate(update, env) {
 // https://core.telegram.org/bots/api#message
 async function handleMessage(message, env) {
   await sendMessage(message.chat.id, `Echo: ${message.text}`, env.BOT_TOKEN);
-  await sendRequest(env.APIFY_URL, { memory: 512, timeout: 60 }, env.APIFY_TOKEN, env.ANKI_COOKIE, 'deck', message.text, 'back');
+  await sendAnki(env.APIFY_URL, { memory: 512, timeout: 60 }, env.APIFY_TOKEN, env.ANKI_COOKIE, 'deck', message.text, 'back');
 }
 
 async function sendMessage(chatId, text, token) {

@@ -1,10 +1,5 @@
-function buildApiUrl(url, params = {}) {
-  const query = new URLSearchParams(params).toString();
-  return `${url}${query ? `?${query}` : ''}`;
-}
-
 // Send request to apify/puppeteer-scraper, which will add a card to AnkiWeb
-async function sendRequest(apifyURL, apifyURLParams, apifyToken, ankiCookie, deckName, front, back) {
+async function sendAnki(apifyURL, apifyURLParams, apifyToken, ankiCookie, deckName, front, back) {
   // Uses apify/puppeteer-scraper
   // https://apify.com/apify/puppeteer-scraper
   // https://docs.apify.com/api/v2#tag/ActorsRun-collection/operation/act_runs_post
@@ -73,63 +68,71 @@ async function sendRequest(apifyURL, apifyURLParams, apifyToken, ankiCookie, dec
   `;
 
   const url = buildApiUrl(apifyURL, apifyURLParams);
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apifyToken}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      "browserLog": false,
-      "closeCookieModals": false,
-      "debugLog": false,
-      "downloadCss": false,
-      "downloadMedia": false,
-      "headless": true,
-      "ignoreCorsAndCsp": false,
-      "ignoreSslErrors": false,
-      "initialCookies": [
-          {
-              "name": "ankiweb",
-              "value": ankiCookie,
-              "domain": "ankiuser.net",
-              "path": "/"
-          },
-          {
-              "name": "has_auth",
-              "value": "1",
-              "domain": "ankiuser.net",
-              "path": "/"
-          }
-      ],
-      "keepUrlFragments": false,
-      "pageFunction": pageFunction,
-      "proxyConfiguration": {
-          "useApifyProxy": true,
-          "apifyProxyGroups": []
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apifyToken}`,
+        'Content-Type': 'application/json'
       },
-      "startUrls": [
-          {
-              "url": "https://ankiuser.net/add"
-          }
-      ],
-      "useChrome": false,
-      "waitUntil": [
-          "networkidle2"
-      ]
-  })
-  });
-  
-  if (!response.ok) {
-    console.error('HTTP error', response.status, response.statusText);
-    return new Response(JSON.stringify(data), { status: 500, headers: { 'Content-Type': 'application/json' } });
-  }
+      body: JSON.stringify({
+        "browserLog": false,
+        "closeCookieModals": false,
+        "debugLog": false,
+        "downloadCss": false,
+        "downloadMedia": false,
+        "headless": true,
+        "ignoreCorsAndCsp": false,
+        "ignoreSslErrors": false,
+        "initialCookies": [
+            {
+                "name": "ankiweb",
+                "value": ankiCookie,
+                "domain": "ankiuser.net",
+                "path": "/"
+            },
+            {
+                "name": "has_auth",
+                "value": "1",
+                "domain": "ankiuser.net",
+                "path": "/"
+            }
+        ],
+        "keepUrlFragments": false,
+        "pageFunction": pageFunction,
+        "proxyConfiguration": {
+            "useApifyProxy": true,
+            "apifyProxyGroups": []
+        },
+        "startUrls": [
+            {
+                "url": "https://ankiuser.net/add"
+            }
+        ],
+        "useChrome": false,
+        "waitUntil": [
+            "networkidle2"
+        ]
+      })
+    });
 
-  const data = await response.json();
-  
-  return new Response(JSON.stringify(data), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    if (!response.ok) {
+      throw new Error('Failed to send data to the API');
+    }
+
+    const data = await response.json();
+
+    return new Response(JSON.stringify(data), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  } catch (error) {
+    console.error(error);
+    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+  }
 }
 
-export { sendRequest };
+function buildApiUrl(url, params = {}) {
+  const query = new URLSearchParams(params).toString();
+  return `${url}${query ? `?${query}` : ''}`;
+}
+
+export { sendAnki };
   
