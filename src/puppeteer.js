@@ -34,7 +34,7 @@ async function sendAnki(apifyURL, apifyURLParams, apifyToken, ankiCookie, deckNa
     }, frontSelector, front);
 
     log.info('4: Filling in the back field');
-    const back = '${back}';
+    const back = \`${back}\`;
     const backSelector = 'div.mt-2.row.form-group:nth-of-type(2) > .col-10 > .field.form-control';
     await page.waitForSelector(backSelector);
     await page.focus(backSelector);

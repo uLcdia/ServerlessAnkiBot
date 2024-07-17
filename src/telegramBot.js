@@ -1,4 +1,5 @@
 import { sendAnki } from "./puppeteer";
+import { getAnkiDictionaryAPI } from "./freeDictionaryAPI";
 
 // https://core.telegram.org/bots/api#getting-updates
 async function handleWebhook(request, env) {
@@ -32,8 +33,20 @@ async function handleUpdate(update, env) {
 // https://core.telegram.org/bots/api#update
 // https://core.telegram.org/bots/api#message
 async function handleMessage(message, env) {
-  await sendMessage(message.chat.id, `Echo: ${message.text}`, env.BOT_TOKEN);
-  await sendAnki(env.APIFY_URL, { memory: 512, timeout: 60 }, env.APIFY_TOKEN, env.ANKI_COOKIE, 'deck', message.text, 'back');
+  // First letter toUpperCase(), others toLowerCase()
+  const text = message.text;
+  const word = text[0].toUpperCase() + text.slice(1).toLowerCase();
+
+  try {
+    // tgQuery uses ankiQuery for now
+    const tgQuery = await getAnkiDictionaryAPI(word);
+    const ankiQuery = await getAnkiDictionaryAPI(word);
+    await sendMessage(message.chat.id, `${word}\n${tgQuery}`, env.BOT_TOKEN);
+    await sendAnki(env.APIFY_URL, { memory: 512, timeout: 60 }, env.APIFY_TOKEN, env.ANKI_COOKIE, 'deck', word, ankiQuery);
+  } catch (error) {
+    console.error(error);
+    await sendMessage(message.chat.id, `${word}\n${error}`, env.BOT_TOKEN);
+  }
 }
 
 async function sendMessage(chatId, text, token) {
