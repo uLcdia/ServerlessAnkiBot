@@ -10,19 +10,19 @@ async function sendAnki(apifyURL, apifyURLParams, apifyToken, ankiCookie, deckNa
     log.info('0: Waiting for the form to load');
     await page.waitForSelector('form button');
 
-    log.info('1: Selecting card type');
+    log.info('1: Selecting card type: Basic');
     const cardTypeSelector = 'div.mt-2.row.form-group:nth-of-type(1) .col-10 .svelte-select input';
     await page.waitForSelector(cardTypeSelector);
     await page.click(cardTypeSelector);
     await page.type(cardTypeSelector, 'Basic\\n');
 
-    log.info('2: Selecting deck');
+    log.info(\`2: Selecting deck: ${deckName}\`);
     const deckSelector = 'div.mt-2.mb-4.row.form-group .col-10 .svelte-select input';
     await page.waitForSelector(deckSelector);
     await page.click(deckSelector);
     await page.type(deckSelector, '${deckName}\\n');
 
-    log.info('3: Filling in the front field');
+    log.info(\`3: Filling in the front field: ${front}\`);
     const front = '${front}';
     const frontSelector = 'div.mt-2.row.form-group:nth-of-type(1) > .col-10 > .field.form-control';
     await page.waitForSelector(frontSelector);
