@@ -1,5 +1,5 @@
 import { sendAnki } from "./puppeteer";
-import { fetchData as fetchDictionaryAPI, buildAnki as buildAnkiDictionaryAPI } from "./freeDictionaryAPI";
+import { fetchData as fetchDicAPI, buildTg as buildTgDicAPI, buildAnki as buildAnkiDicAPI } from "./freeDictionaryAPI";
 
 // https://core.telegram.org/bots/api#getting-updates
 async function handleWebhook(request, env) {
@@ -38,13 +38,12 @@ async function handleMessage(message, env) {
   const word = text[0].toUpperCase() + text.slice(1).toLowerCase();
 
   try {
-    const data = await fetchDictionaryAPI(word);
+    const data = await fetchDicAPI(word);
 
-    // tgQuery uses ankiQuery for now
-    const tgQuery = buildAnkiDictionaryAPI(data);
-    const ankiQuery = buildAnkiDictionaryAPI(data);
+    const tgQuery = buildTgDicAPI(data);
+    const ankiQuery = buildAnkiDicAPI(data);
 
-    await sendMessage(message.chat.id, `${word}\n${tgQuery}`, env.BOT_TOKEN);
+    await sendMessage(message.chat.id, `${tgQuery}`, env.BOT_TOKEN);
     await sendAnki(env.APIFY_URL, { memory: 512, timeout: 60 }, env.APIFY_TOKEN, env.ANKI_COOKIE, 'deck', word, ankiQuery);
   } catch (error) {
     console.error(error);
