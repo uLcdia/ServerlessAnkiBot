@@ -33,6 +33,9 @@ async function handleUpdate(update, env) {
 // https://core.telegram.org/bots/api#update
 // https://core.telegram.org/bots/api#message
 async function handleMessage(message, env) {
+  // May support changing deck in future updates
+  const deck = 'deck';
+
   // First letter toUpperCase(), others toLowerCase()
   const text = message.text;
   const word = text[0].toUpperCase() + text.slice(1).toLowerCase();
@@ -40,11 +43,19 @@ async function handleMessage(message, env) {
   try {
     const data = await fetchDicAPI(word);
 
-    const tgQuery = buildTgDicAPI(data);
-    const ankiQuery = buildAnkiDicAPI(data);
+    // If already in deck, skip adding
+    const isWordExist = await env.KV.get(word);
+    if (!isWordExist) {
+      await env.KV.put(word, deck);
 
-    await sendMessage(message.chat.id, `${tgQuery}`, env.BOT_TOKEN);
-    await sendAnki(env.APIFY_URL, { memory: 512, timeout: 60 }, env.APIFY_TOKEN, env.ANKI_COOKIE, 'deck', word, ankiQuery);
+      const tgQuery = buildTgDicAPI(data);
+      await sendMessage(message.chat.id, `${tgQuery}`, env.BOT_TOKEN);
+      const ankiQuery = buildAnkiDicAPI(data);
+      await sendAnki(env.APIFY_URL, { memory: 512, timeout: 60 }, env.APIFY_TOKEN, env.ANKI_COOKIE, deck, word, ankiQuery);
+    } else {
+      const tgQuery = buildTgDicAPI(data) + `Warning: "${word}" already in "${deck}".`;
+      await sendMessage(message.chat.id, `${tgQuery}`, env.BOT_TOKEN);
+    }
   } catch (error) {
     console.error(error);
     await sendMessage(message.chat.id, `${word}\n${error}`, env.BOT_TOKEN);
