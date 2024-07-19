@@ -1,4 +1,4 @@
-async function getAnkiDictionaryAPI(word) {
+async function fetchData(word) {
   const url = `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`;
 
   try {
@@ -10,18 +10,14 @@ async function getAnkiDictionaryAPI(word) {
 
     const data = await response.json();
 
-    const ankiData = buildAnkiData(data);
-
-    console.log(ankiData);
-
-    return ankiData;
-  } catch (error) {
+    return data;
+  } catch(error) {
     console.error(error);
     return error;
   }
 }
 
-function buildAnkiData(data) {
+function buildAnki(data) {
   const firstWord = data[0].word;
 
   return data.map((entry) => {
@@ -58,5 +54,5 @@ function buildAnkiData(data) {
   }).join('\n');
 }
 
-export { getAnkiDictionaryAPI };
+export { fetchData, buildAnki };
     
