@@ -7,8 +7,8 @@ Telegram bot running on Cloudflare Workers, generates and uploads Anki flashcard
 - ✅ Telegram bot
 	- ✅ Bot receives and sends messages
 	- ✅ Bot receives messages and send them to Apify-Puppeteer
-  - ✅ Check if card is already added using Workers KV
-  - ⏳ Add [BotCommand](https://core.telegram.org/bots/api#botcommand)
+  	- ✅ Check if card is already added using Workers KV
+  	- ✅ Delete flashcard from KV
 - 🏗️ Dictionary
 	- ✅ Use Free Dictionary API
 	- 🏗️ Use Merriam-Webster's Learner's Dictionary
@@ -16,7 +16,7 @@ Telegram bot running on Cloudflare Workers, generates and uploads Anki flashcard
 	- ✅ Flashcard for AnkiWeb
 	- ✅ Dictionary query for Telegram
 - ✅ Upload Anki flashcard
-  - ✅ Use Apify-Puppeteer to simulate adding cards on [Add - AnkiWeb](https://ankiuser.net/add)
+  	- ✅ Use Apify-Puppeteer to simulate adding cards on [Add - AnkiWeb](https://ankiuser.net/add)
 
 ## Resources
 
