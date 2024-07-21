@@ -100,6 +100,7 @@ async function respondQuery(chatID, word, env) {
 }
 
 async function respondDelete(chatID, word, env) {
+  env.KV.delete(word);
   await sendMessage(chatID, `Deleting ${word} from KV.`, env.BOT_TOKEN);
 }
 
