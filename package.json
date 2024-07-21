@@ -20,7 +20,6 @@
     "wrangler": "^3.60.3"
   },
   "dependencies": {
-    "@cfworker/web": "^1.14.0",
-    "cfworker-middleware-telegraf": "^2.0.2"
+    "@cfworker/web": "^1.14.0"
   }
 }
