@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "@cfworker/web": "^1.14.0",
-    "cfworker-middleware-telegraf": "^2.0.2",
-    "telegraf": "^4.16.3"
+    "cfworker-middleware-telegraf": "^2.0.2"
   }
 }
