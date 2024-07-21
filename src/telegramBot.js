@@ -40,7 +40,7 @@ async function handleMessage(message, env) {
     const command = text.split(' ')[0];
     const commandText = text.slice(command.length).trim();
     // First letter toUpperCase(), others toLowerCase()
-    const word = commandText[0].toUpperCase() + text.slice(1).toLowerCase();
+    const word = commandText[0].toUpperCase() + commandText.slice(1).toLowerCase();
 
     switch (command) {
       case '/delete':
