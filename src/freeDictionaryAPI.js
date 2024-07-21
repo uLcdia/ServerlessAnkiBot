@@ -19,7 +19,7 @@ async function fetchData(word) {
 // Telegram's custom Markdown is too limited, using plain text instead
 function buildTg(data) {
   return data.map((entry) => {
-    let result = `${entry.word} ${entry.phonetic}\n`;
+    let result = `${entry.word} ${getPhonetic(entry)}\n`;
 
     entry.meanings.forEach(meaning => {
       result += `${meaning.partOfSpeech}\n`;
@@ -54,7 +54,7 @@ function buildAnki(data) {
       result += `${entry.word} `;
     }
 
-    result += `${entry.phonetic}\n`;
+    result += `${getPhonetic(entry)}\n`;
 
     entry.meanings.forEach(meaning => {
       result += `[${meaning.partOfSpeech}]\n`;
@@ -78,6 +78,19 @@ function buildAnki(data) {
 
     return result;
   }).join('\n');
+}
+
+function getPhonetic(entry) {
+  // entry.phonetic may or may not exist, if not, use the first encounter of entry.phonetics.text
+  if (entry.phonetic) {
+    return entry.phonetic;
+  } else {
+    for (const phoneticEntry of entry.phonetics) {
+      if (phoneticEntry.text) {
+        return phoneticEntry.text;
+      }
+    }
+  }
 }
 
 export { fetchData, buildTg, buildAnki };
