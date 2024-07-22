@@ -42,6 +42,7 @@ async function handleMessage(message, env) {
     const chatID = message.chat.id;
     const text = message.text;
 
+    // Receives '/command commandText'
     if (text.startsWith('/')) {
       const command = text.split(' ')[0];
       const commandText = text.slice(command.length).trim();
@@ -82,6 +83,7 @@ async function handleMessage(message, env) {
     }
 }
 
+// Send dictionary definition to Telegram and add flashcard to deck.
 async function respondAnki(chatID, word, env) {
   const deck = 'deck';
   const apifyURL = 'https://api.apify.com/v2/acts/apify~puppeteer-scraper/runs';
@@ -108,6 +110,7 @@ async function respondAnki(chatID, word, env) {
   }
 }
 
+// Send dictionary definition to Telegram, without adding flashcard to deck.
 async function respondQuery(chatID, word, env) {
   try {
     const data = await fetchDicAPI(word);
@@ -119,13 +122,14 @@ async function respondQuery(chatID, word, env) {
   }
 }
 
+// Delete flashcard from KV. You need to manually delete 'word' flashcard from deck before sending '/delete word' to bot.
 async function respondDelete(chatID, word, env) {
   env.KV.delete(word);
   await sendMessage(chatID, `Deleting ${word} from KV.`, env.BOT_TOKEN);
 }
 
-async function sendMessage(chatId, text, token) {
-  const response = await fetch(buildApiUrl(token, 'sendMessage', { chat_id: chatId, text }));
+async function sendMessage(chatID, text, token) {
+  const response = await fetch(buildApiUrl(token, 'sendMessage', { chat_id: chatID, text }));
   return response.json();
 }
 

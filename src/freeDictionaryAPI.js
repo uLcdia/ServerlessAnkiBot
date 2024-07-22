@@ -31,9 +31,7 @@ function buildTg(data) {
           result += `    ${definition.definition}`;
         }
 
-        if (definition.example) {
-          result += `\n    >  ${definition.example}`;
-        }
+        result += `${definition.example ? '\n    >  ' + definition.example : ''}`
 
         result += '\n\n';
       });
@@ -47,14 +45,11 @@ function buildAnki(data) {
   const firstWord = data[0].word;
 
   return data.map((entry) => {
-    let result = '';
-
     // Show word only if it's different from the first word
-    if (entry.word !== firstWord) {
-      result += `${entry.word} `;
-    }
+    let result = `${entry.word !== firstWord ? entry.word : ''}`;
 
-    result += `${getPhonetic(entry)}\n`;
+    // Show phonetic only if it exists
+    result += `${getPhonetic(entry) ? getPhonetic(entry) + '\n' : ''}`;
 
     entry.meanings.forEach(meaning => {
       result += `[${meaning.partOfSpeech}]\n`;
@@ -66,9 +61,7 @@ function buildAnki(data) {
           result += `${definition.definition}`;
         }
 
-        if (definition.example) {
-          result += `\n> ${definition.example}`;
-        }
+        result += `${definition.example ? '\n> ' + definition.example : ''}`
 
         result += '\n\n';
       });
@@ -91,6 +84,8 @@ function getPhonetic(entry) {
       }
     }
   }
+  // API may not provide pronunciation at all
+  return '';
 }
 
 export { fetchData, buildTg, buildAnki };
