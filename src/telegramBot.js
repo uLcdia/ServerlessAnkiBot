@@ -84,6 +84,7 @@ async function handleMessage(message, env) {
 
 async function respondAnki(chatID, word, env) {
   const deck = 'deck';
+  const apifyURL = 'https://api.apify.com/v2/acts/apify~puppeteer-scraper/runs';
 
   try {
     const data = await fetchDicAPI(word);
@@ -96,7 +97,7 @@ async function respondAnki(chatID, word, env) {
       const tgQuery = buildTgDicAPI(data);
       await sendMessage(chatID, `${tgQuery}`, env.BOT_TOKEN);
       const ankiQuery = buildAnkiDicAPI(data);
-      await sendAnki(env.APIFY_URL, { memory: 512, timeout: 60 }, env.APIFY_TOKEN, env.ANKI_COOKIE, deck, word, ankiQuery);
+      await sendAnki(apifyURL, { memory: 512, timeout: 60 }, env.APIFY_TOKEN, env.ANKI_COOKIE, deck, word, ankiQuery);
     } else {
       const tgQuery = buildTgDicAPI(data) + `Warning: "${word}" already in "${deck}".`;
       await sendMessage(chatID, `${tgQuery}`, env.BOT_TOKEN);
