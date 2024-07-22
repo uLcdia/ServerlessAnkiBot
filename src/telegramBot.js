@@ -18,10 +18,16 @@ async function handleWebhook(request, env) {
 // https://core.telegram.org/bots/api#update
 async function handleUpdate(update, env) {
   // userID or username in env.USER_LIST, or env.USER_LIST is empty
-  const isUserAuthorized = env.USER_LIST.includes(update.message.from.id.toString()) || env.USER_LIST.includes(update.message.from.username) || !env.USER_LIST.length;
+  let isUserAuthorized ;
+  if (!env.USER_LIST.length) {
+    console.warn('USER_LIST not set');
+    isUserAuthorized = true;
+  } else {
+    isUserAuthorized = env.USER_LIST.includes(update.message.from.id.toString()) || env.USER_LIST.includes(update.message.from.username)
+  }
 
   if (!isUserAuthorized) {
-    console.log(`Unauthorized userid: ${update.message.from.id} , username: ${update.message.from.username}`);
+    console.log(`Unauthorized userid: ${update.message.from.id}${update.message.from.username ? `, username: ${update.message.from.username}` : ''}`);
     return;
   }
 
