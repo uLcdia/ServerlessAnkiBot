@@ -39,34 +39,47 @@ async function handleUpdate(update, env) {
 // https://core.telegram.org/bots/api#update
 // https://core.telegram.org/bots/api#message
 async function handleMessage(message, env) {
-  const chatID = message.chat.id;
-  const text = message.text;
+    const chatID = message.chat.id;
+    const text = message.text;
 
-  if (text.startsWith('/')) {
-    const command = text.split(' ')[0];
-    const commandText = text.slice(command.length).trim();
-    // First letter toUpperCase(), others toLowerCase()
-    const word = commandText[0].toUpperCase() + commandText.slice(1).toLowerCase();
+    if (text.startsWith('/')) {
+      const command = text.split(' ')[0];
+      const commandText = text.slice(command.length).trim();
 
-    switch (command) {
-      case '/delete':
-        await respondDelete(chatID, word, env);
+      // Avoid formatInputWord('') when text = '/command [nothing]'
+      if (!commandText.length) {
+        console.error(`${text}\nError: Command text is empty`);
+        await sendMessage(chatID, `${text}\nError: Command text is empty`, env.BOT_TOKEN);
         return;
-      case '/query':
-        await respondQuery(chatID, word, env);
+      }
+      let word;
+      try {
+        word = formatInputWord(commandText);
+      } catch(error) {
+        console.error(error);
+        await sendMessage(chatID, `${text}\n${error}`, env.BOT_TOKEN);
         return;
-      case '/add':
-        await respondAnki(chatID, word, env);
-        return;
-      default:
-        await sendMessage(message.chat.id, 'Invalid command', env.BOT_TOKEN);
-        return;
+      }
+      
+      switch (command) {
+        case '/delete':
+          await respondDelete(chatID, word, env);
+          return;
+        case '/query':
+          await respondQuery(chatID, word, env);
+          return;
+        case '/add':
+          await respondAnki(chatID, word, env);
+          return;
+        default:
+          await sendMessage(chatID, 'Invalid command', env.BOT_TOKEN);
+          return;
+      }
+    } else {
+      const word = formatInputWord(text);
+      await respondAnki(chatID, word, env);
+      return;
     }
-  } else {
-    const word = text[0].toUpperCase() + text.slice(1).toLowerCase();
-    await respondAnki(chatID, word, env);
-    return;
-  }
 }
 
 async function respondAnki(chatID, word, env) {
@@ -138,6 +151,24 @@ async function removeWebhook(token) {
 function buildApiUrl(token, methodName, params = {}) {
   const query = new URLSearchParams(params).toString();
   return `https://api.telegram.org/bot${token}/${methodName}${query ? `?${query}` : ''}`;
+}
+
+function formatInputWord(input) {
+  try {
+    // Replace all non-alphabetic characters with spaces
+    input = input.replace(/[^a-zA-Z]+/g, ' ');
+
+    // Remove extra spaces at the beginning and end, and reduce multiple spaces to a single space
+    input = input.trim().replace(/\s+/g, ' ');
+
+    // First letter toUpperCase(), others toLowerCase()
+    const word = input[0].toUpperCase() + input.slice(1).toLowerCase();
+
+    return word;
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to format input word');
+  }
 }
 
 export { handleWebhook, setWebhook, removeWebhook };
