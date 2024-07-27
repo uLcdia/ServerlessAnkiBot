@@ -42,6 +42,12 @@ async function handleMessage(message, env) {
     const chatID = message.chat.id;
     const text = message.text;
 
+    // Receives messages without text (stickers, files ...)
+    if (!text) {
+      await sendMessage(chatID, 'Invalid input', env.BOT_TOKEN);
+      return;
+    }
+
     // Receives '/command commandText'
     if (text.startsWith('/')) {
       const command = text.split(' ')[0];
@@ -77,7 +83,15 @@ async function handleMessage(message, env) {
           return;
       }
     } else {
-      const word = formatInputWord(text);
+      let word;
+      try {
+        word = formatInputWord(commandText);
+      } catch(error) {
+        console.error(error);
+        await sendMessage(chatID, `${text}\n${error}`, env.BOT_TOKEN);
+        return;
+      }
+      
       await respondAnki(chatID, word, env);
       return;
     }
@@ -99,7 +113,7 @@ async function respondAnki(chatID, word, env) {
       const tgQuery = buildTgDicAPI(data);
       await sendMessage(chatID, `${tgQuery}`, env.BOT_TOKEN);
       const ankiQuery = buildAnkiDicAPI(data);
-      await sendAnki(apifyURL, { memory: 512, timeout: 60 }, env.APIFY_TOKEN, env.ANKI_COOKIE, deck, word, ankiQuery);
+      await sendAnki(apifyURL, { memory: 512, timeout: 120 }, env.APIFY_TOKEN, env.ANKI_COOKIE, deck, word, ankiQuery);
     } else {
       const tgQuery = buildTgDicAPI(data) + `Warning: "${word}" already in "${deck}".`;
       await sendMessage(chatID, `${tgQuery}`, env.BOT_TOKEN);
