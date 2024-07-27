@@ -44,6 +44,7 @@ async function handleMessage(message, env) {
 
     // Receives messages without text (stickers, files ...)
     if (!text) {
+      console.error(`Error: message.text is empty`);
       await sendMessage(chatID, 'Invalid input', env.BOT_TOKEN);
       return;
     }
@@ -85,13 +86,13 @@ async function handleMessage(message, env) {
     } else {
       let word;
       try {
-        word = formatInputWord(commandText);
+        word = formatInputWord(text);
       } catch(error) {
         console.error(error);
         await sendMessage(chatID, `${text}\n${error}`, env.BOT_TOKEN);
         return;
       }
-      
+
       await respondAnki(chatID, word, env);
       return;
     }
