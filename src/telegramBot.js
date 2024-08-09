@@ -73,7 +73,13 @@ async function handleMessage(message, env) {
         case '/delete':
           await respondDelete(chatID, word, env);
           return;
+        case '/d':
+          await respondDelete(chatID, word, env);
+          return;
         case '/query':
+          await respondQuery(chatID, word, env);
+          return;
+        case '/q':
           await respondQuery(chatID, word, env);
           return;
         case '/add':
